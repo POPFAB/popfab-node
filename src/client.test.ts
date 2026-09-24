@@ -29,6 +29,20 @@ test('maps a camelCase transfer request to the public API contract', async () =>
   });
 });
 
+test('uses the documented Popfab API host by default', async () => {
+  let url = '';
+  const popfab = new Popfab({
+    apiKey: 'sk_test_example',
+    fetch: async (input) => {
+      url = String(input);
+      return Response.json({ banks: [] });
+    },
+  });
+
+  await popfab.transfers.listBanks('NGN');
+  assert.equal(url, 'https://api.popfab.io/v1/transfers/banks?currency=NGN');
+});
+
 test('requires a persisted caller idempotency key for transfers', async () => {
   const popfab = new Popfab({ apiKey: 'sk_test_example', fetch: globalThis.fetch });
   await assert.rejects(popfab.transfers.initiate({

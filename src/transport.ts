@@ -15,7 +15,7 @@ export class Transport {
     this.environment = config.apiKey.startsWith('sk_live_') ? 'live' : 'sandbox';
     this.fetcher = config.fetch ?? globalThis.fetch;
     if (!this.fetcher) throw new ConfigurationError('A Fetch implementation is required', 'ConfigurationError');
-    this.baseUrl = (config.baseUrl ?? 'https://api.popfab.com').replace(/\/$/, '');
+    this.baseUrl = (config.baseUrl ?? 'https://api.popfab.io').replace(/\/$/, '');
     this.timeout = config.timeout ?? 15_000;
     this.maxReadRetries = config.maxReadRetries ?? 2;
   }
@@ -68,6 +68,10 @@ export class Transport {
         options.signal?.removeEventListener('abort', onAbort);
       }
     }
-    throw new NetworkError('Could not complete Popfab API request', 'NetworkError', undefined, undefined, undefined, undefined, { cause: lastError });
+    const causeMessage = lastError instanceof Error ? lastError.message : undefined;
+    throw new NetworkError(
+      causeMessage ? `Could not complete Popfab API request: ${causeMessage}` : 'Could not complete Popfab API request',
+      'NetworkError', undefined, undefined, undefined, undefined, { cause: lastError },
+    );
   }
 }

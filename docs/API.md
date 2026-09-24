@@ -14,7 +14,7 @@ new Popfab({
 })
 ```
 
-`apiKey` must begin with `sk_test_` or `sk_live_`. The key selects sandbox or live mode. `baseUrl` defaults to `https://api.popfab.com` and is intended for controlled test/proxy use.
+`apiKey` must begin with `sk_test_` or `sk_live_`. The key selects sandbox or live mode. `baseUrl` defaults to `https://api.popfab.io` and is intended for controlled test/proxy use.
 
 ## Request options
 
