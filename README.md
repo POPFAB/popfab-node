@@ -314,4 +314,4 @@ This is an active pre-release SDK. The public API will follow semantic versionin
 
 ## License
 
-No open-source license has been selected yet. Do not copy, modify, or redistribute this package until Popfab publishes a license.
+This project is licensed under the [MIT License](LICENSE).

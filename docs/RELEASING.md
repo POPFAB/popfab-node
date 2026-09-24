@@ -47,3 +47,5 @@ The workflow runs checks, tests, build, package inspection, then `npm publish --
 4. Review `npm pack --dry-run` output for unintended files.
 5. Update version and changelog.
 6. Tag exactly the same version as `package.json` with a `v` prefix.
+
+The publish workflow also enforces these checks. It requires an `sk_test_` sandbox key, runs the read-only sandbox suite, and rejects a tag that does not match `package.json`.
