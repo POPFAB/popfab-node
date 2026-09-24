@@ -243,12 +243,38 @@ app.post('/webhooks/popfab', express.raw({ type: 'application/json' }), (req, re
 
 The dispatcher also sends `X-POPFAB-Event`, `X-POPFAB-Delivery`, and `X-POPFAB-Environment` headers. Do not treat a webhook as a replacement for idempotency: webhook handlers must remain safe to run more than once.
 
+## Virtual accounts
+
+```ts
+const account = await popfab.virtualAccounts.create({
+  customerEmail: 'ada@example.com',
+  customerName: 'Ada Okafor',
+  customerPhone: '+2348000000000',
+  preferredBank: 'wema', // optional
+});
+
+const stored = await popfab.virtualAccounts.get(account.id);
+const accounts = await popfab.virtualAccounts.list({ limit: 25 });
+await popfab.virtualAccounts.deactivate(account.id);
+```
+
+## Customers
+
+Customers are created or updated by successful payment activity. The SDK currently supports retrieving them:
+
+```ts
+const customer = await popfab.customers.get('ppfb_cus_...');
+const customers = await popfab.customers.list({ limit: 25 });
+```
+
 ## API surface
 
 | Resource | Methods |
 | --- | --- |
 | `popfab.payments` | `initiate`, `get`, `list`, `sync`, `refund` |
 | `popfab.transfers` | `listBanks`, `verifyAccount`, `initiate`, `initiateBulk`, `get`, `list` |
+| `popfab.virtualAccounts` | `create`, `get`, `list`, `deactivate` |
+| `popfab.customers` | `get`, `list` |
 | `popfab.webhooks` | `constructEvent` |
 
 ## Development

@@ -165,3 +165,30 @@ test('rejects a malformed, altered, or stale webhook delivery', () => {
   assert.throws(() => popfab.webhooks.constructEvent({ payload, signature: 'sha256=not-a-signature', timestamp, webhookSecret: secret, now: timestamp }), WebhookSignatureError);
   assert.throws(() => popfab.webhooks.constructEvent({ payload, signature, timestamp, webhookSecret: secret, now: timestamp + 301_000 }), WebhookTimestampError);
 });
+
+test('maps virtual accounts and customers to typed SDK resources', async () => {
+  const requests: Request[] = [];
+  const popfab = new Popfab({
+    apiKey: 'sk_test_example', baseUrl: 'https://api.example.test',
+    fetch: async (input, init) => {
+      const request = new Request(input, init);
+      requests.push(request);
+      if (request.url.includes('/customers')) return Response.json({
+        data: [{ id: 'cus_1', merchant_id: 'merchant_1', email: 'ada@example.test', name: 'Ada', phone: null, payment_count: 3 }], has_more: false, next_cursor: null,
+      });
+      if (request.method === 'GET') return Response.json({
+        data: [{ id: 'va_1', customer_email: 'ada@example.test', customer_name: 'Ada', account_number: '0123456789', account_name: 'Ada', bank_name: 'Wema', currency: 'NGN', provider: 'paystack', active: true }], has_more: false, next_cursor: null,
+      });
+      return Response.json({ id: 'va_1', customer_email: 'ada@example.test', customer_name: 'Ada', account_number: '0123456789', account_name: 'Ada', bank_name: 'Wema', currency: 'NGN', provider: 'paystack', active: true });
+    },
+  });
+
+  const account = await popfab.virtualAccounts.create({ customerEmail: 'ada@example.test', customerName: 'Ada', preferredBank: 'wema' });
+  const accounts = await popfab.virtualAccounts.list({ limit: 1 });
+  const customers = await popfab.customers.list({ limit: 1 });
+
+  assert.equal(account.accountNumber, '0123456789');
+  assert.equal(accounts.data[0].customerEmail, 'ada@example.test');
+  assert.equal(customers.data[0].paymentCount, 3);
+  assert.deepEqual(await requests[0].json(), { customer_email: 'ada@example.test', customer_name: 'Ada', preferred_bank: 'wema' });
+});

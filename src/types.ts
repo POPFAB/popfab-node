@@ -163,6 +163,43 @@ export interface Page<T> {
   [key: string]: unknown;
 }
 
+export interface CreateVirtualAccountInput {
+  customerEmail: string;
+  customerName: string;
+  customerPhone?: string;
+  preferredBank?: string;
+  providerId?: string;
+  metadata?: Record<string, string>;
+}
+
+export interface VirtualAccount {
+  id: string;
+  customerEmail: string;
+  customerName: string;
+  accountNumber: string;
+  accountName: string;
+  bankName: string;
+  currency: string;
+  provider: string;
+  active: boolean;
+  metadata?: Record<string, string> | null;
+  createdAt?: string;
+  updatedAt?: string;
+  [key: string]: unknown;
+}
+
+export interface Customer {
+  id: string;
+  merchantId: string;
+  email: string;
+  name?: string | null;
+  phone?: string | null;
+  paymentCount: number;
+  createdAt?: string;
+  updatedAt?: string;
+  [key: string]: unknown;
+}
+
 export interface PopfabConfig {
   apiKey: string;
   baseUrl?: string;

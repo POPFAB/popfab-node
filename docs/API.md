@@ -66,3 +66,21 @@ The method verifies `X-POPFAB-Signature` and `X-POPFAB-Timestamp`, returning `{ 
 ## Errors
 
 All SDK errors extend `PopfabError`. The exported error classes are `AuthenticationError`, `ValidationError`, `IdempotencyError`, `RateLimitError`, `ApiError`, `NetworkError`, `ConfigurationError`, `WebhookSignatureError`, and `WebhookTimestampError`.
+
+## Virtual accounts
+
+| Method | Description |
+| --- | --- |
+| `virtualAccounts.create(input, options?)` | Creates or returns a virtual account for a customer. |
+| `virtualAccounts.get(id, options?)` | Retrieves one virtual account. |
+| `virtualAccounts.list(options?)` | Lists virtual accounts; accepts `limit` and `cursor`. |
+| `virtualAccounts.deactivate(id, options?)` | Deactivates an existing virtual account. |
+
+Creation requires `customerEmail` and `customerName`; optional fields are `customerPhone`, `preferredBank`, `providerId`, and `metadata`.
+
+## Customers
+
+| Method | Description |
+| --- | --- |
+| `customers.get(id, options?)` | Retrieves one customer. |
+| `customers.list(options?)` | Lists customers; accepts `limit` and `cursor`. |
