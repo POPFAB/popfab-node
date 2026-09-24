@@ -1,0 +1,28 @@
+name: Sandbox integration
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  sandbox:
+    runs-on: ubuntu-latest
+    # Repository secrets are unavailable to pull requests from forks. This job
+    # runs only on trusted main-branch pushes and manual dispatches.
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'push'
+    env:
+      POPFAB_SANDBOX_SECRET_KEY: ${{ secrets.POPFAB_SANDBOX_SECRET_KEY }}
+      POPFAB_BASE_URL: ${{ vars.POPFAB_BASE_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Run sandbox contract tests
+        run: npm run test:integration

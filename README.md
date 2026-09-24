@@ -284,6 +284,7 @@ This is an active pre-release SDK. The public API will follow semantic versionin
 - [Webhook examples](examples/webhooks)
 - [Contributing guide](CONTRIBUTING.md)
 - [Security policy](SECURITY.md)
+- [Sandbox testing and releases](docs/RELEASING.md)
 
 ## License
 
