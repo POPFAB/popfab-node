@@ -1,6 +1,6 @@
 {
   "name": "popfab",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Official Node.js SDK for the Popfab API.",
   "type": "module",
   "main": "./dist/index.js",
@@ -11,8 +11,14 @@
       "import": "./dist/index.js"
     }
   },
-  "files": ["dist", "README.md", "LICENSE"],
-  "engines": { "node": ">=20" },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "test": "tsc -p tsconfig.test.json && node --test test-dist/client.test.js",
@@ -21,7 +27,12 @@
     "release:check": "node scripts/release-check.mjs && npm run check && npm test && npm run test:integration && npm run build && npm pack --dry-run",
     "prepublishOnly": "npm run release:check"
   },
-  "keywords": ["popfab", "payments", "transfers", "fintech"],
+  "keywords": [
+    "popfab",
+    "payments",
+    "transfers",
+    "fintech"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/POPFAB/popfab-node.git"
