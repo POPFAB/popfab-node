@@ -28,9 +28,9 @@ test('maps a camelCase transfer request to the public API contract', async () =>
   });
 });
 
-test('requires a persisted caller idempotency key for transfers', () => {
+test('requires a persisted caller idempotency key for transfers', async () => {
   const popfab = new Popfab({ apiKey: 'sk_test_example', fetch: globalThis.fetch });
-  assert.throws(() => popfab.transfers.initiate({
+  await assert.rejects(popfab.transfers.initiate({
     amount: 5_000, currency: 'NGN', reference: 'payout-1',
     recipient: { accountNumber: '0123456789', bankCode: '058', name: 'Ada' },
   }, {}), ConfigurationError);
@@ -91,4 +91,47 @@ test('maps public API errors to typed SDK errors without retrying money requests
 
   const invalidKey = () => new Popfab({ apiKey: 'not-a-popfab-key' });
   assert.throws(invalidKey, ConfigurationError);
+});
+
+test('normalizes account verification, transfer states, lists, and bulk transfers', async () => {
+  const requests: Request[] = [];
+  const popfab = new Popfab({
+    apiKey: 'sk_test_example', baseUrl: 'https://api.example.test',
+    fetch: async (input, init) => {
+      const request = new Request(input, init);
+      requests.push(request);
+      if (request.url.includes('verify-account')) return Response.json({ account_name: 'Ada Okafor', account_number: '0123456789', bank_code: '058' });
+      if (request.url.endsWith('/bulk')) return Response.json({ batch_reference: 'batch_1', status: 'queued', total_count: 2, success_count: 0, failure_count: 0 });
+      if (request.method === 'GET' && request.url.includes('/transfers?')) return Response.json({
+        data: [{ id: 'trf_1', reference: 'payout-1', amount: 5000, currency: 'NGN', status: 'pending', provider_transfer_code: null, pending_confirmation: true, recipient: { account_number: '0123456789', bank_code: '058', name: 'Ada Okafor' } }],
+        has_more: false, next_cursor: null,
+      });
+      return Response.json({ id: 'trf_1', reference: 'payout-1', amount: 5000, currency: 'NGN', status: 'pending', pending_confirmation: true, recipient: { account_number: '0123456789', bank_code: '058', name: 'Ada Okafor' } });
+    },
+  });
+
+  const account = await popfab.transfers.verifyAccount({ accountNumber: '0123456789', bankCode: '058' });
+  const transfer = await popfab.transfers.initiate({ amount: 5000, currency: 'NGN', reference: 'payout-1', recipient: { accountNumber: '0123456789', bankCode: '058', name: account.accountName } }, { idempotencyKey: 'payout-1' });
+  const page = await popfab.transfers.list({ status: 'pending' });
+  const batch = await popfab.transfers.initiateBulk({
+    currency: 'NGN', transfers: [
+      { amount: 5000, reference: 'payout-2', recipient: { accountNumber: '0123456789', bankCode: '058', name: 'Ada' } },
+      { amount: 6000, reference: 'payout-3', recipient: { accountNumber: '0123456788', bankCode: '058', name: 'Tolu' } },
+    ],
+  }, { idempotencyKey: 'batch-1' });
+
+  assert.equal(account.accountName, 'Ada Okafor');
+  assert.equal(transfer.pendingConfirmation, true);
+  assert.equal(transfer.recipient?.accountNumber, '0123456789');
+  assert.equal(page.data[0].pendingConfirmation, true);
+  assert.equal(batch.batchReference, 'batch_1');
+  assert.equal(batch.totalCount, 2);
+  assert.equal(requests[1].headers.get('idempotency-key'), 'payout-1');
+  assert.equal(requests[3].headers.get('idempotency-key'), 'batch-1');
+  assert.deepEqual(await requests[3].json(), {
+    currency: 'NGN', transfers: [
+      { amount: 5000, reference: 'payout-2', recipient: { account_number: '0123456789', bank_code: '058', name: 'Ada' } },
+      { amount: 6000, reference: 'payout-3', recipient: { account_number: '0123456788', bank_code: '058', name: 'Tolu' } },
+    ],
+  });
 });

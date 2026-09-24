@@ -74,6 +74,12 @@ export interface RecipientInput {
   name: string;
 }
 
+export interface TransferRecipient {
+  accountNumber: string;
+  bankCode: string;
+  name: string;
+}
+
 export interface VerifyAccountInput {
   accountNumber: string;
   bankCode: string;
@@ -97,6 +103,30 @@ export interface InitiateTransferInput {
   metadata?: Record<string, string>;
 }
 
+export interface BulkTransferItemInput {
+  amount: number;
+  reference: string;
+  recipient: RecipientInput;
+  reason?: string;
+}
+
+export interface InitiateBulkTransferInput {
+  currency: string;
+  providerId?: string;
+  transfers: BulkTransferItemInput[];
+}
+
+export type BulkTransferStatus = 'queued' | 'processing' | 'partial' | 'completed' | 'failed';
+
+export interface BulkTransfer {
+  batchReference: string;
+  status: BulkTransferStatus;
+  totalCount: number;
+  successCount?: number;
+  failureCount?: number;
+  [key: string]: unknown;
+}
+
 export interface Transfer {
   id: string;
   reference: string;
@@ -105,8 +135,18 @@ export interface Transfer {
   status: TransferStatus;
   provider?: string | null;
   providerTransferCode?: string | null;
+  recipient?: TransferRecipient;
+  reason?: string | null;
+  failureReason?: string | null;
+  metadata?: Record<string, string> | null;
+  createdAt?: string;
+  updatedAt?: string;
   pendingConfirmation?: boolean;
   [key: string]: unknown;
+}
+
+export interface TransferListOptions extends ListOptions {
+  status?: TransferStatus;
 }
 
 export interface Bank {
