@@ -1,0 +1,116 @@
+export type PopfabEnvironment = 'sandbox' | 'live';
+export type PaymentStatus = 'pending' | 'processing' | 'success' | 'failed' | 'reversed';
+export type TransferStatus = PaymentStatus | 'queued';
+
+export interface RequestOptions {
+  /** Required for every operation that can move money. Persist this value before sending the request. */
+  idempotencyKey?: string;
+  signal?: AbortSignal;
+}
+
+export interface ListOptions {
+  limit?: number;
+  cursor?: string;
+  signal?: AbortSignal;
+}
+
+export interface CustomerInput {
+  email: string;
+  name?: string;
+  phone?: string;
+  country?: string;
+  region?: string;
+}
+
+export interface InitiatePaymentInput {
+  amount: number;
+  currency: string;
+  reference: string;
+  paymentMethod: string;
+  customer: CustomerInput;
+  callbackUrl?: string;
+  metadata?: Record<string, string>;
+  routingOverride?: string;
+}
+
+export interface Payment {
+  id: string;
+  reference: string;
+  amount: number;
+  currency: string;
+  status: PaymentStatus;
+  provider?: string | null;
+  providerReference?: string | null;
+  checkoutUrl?: string | null;
+  pendingConfirmation?: boolean;
+  [key: string]: unknown;
+}
+
+export interface RefundInput {
+  amount?: number;
+  reason?: string;
+}
+
+export interface RecipientInput {
+  accountNumber: string;
+  bankCode: string;
+  name: string;
+}
+
+export interface VerifyAccountInput {
+  accountNumber: string;
+  bankCode: string;
+  providerId?: string;
+}
+
+export interface VerifiedAccount {
+  accountName: string;
+  accountNumber: string;
+  bankCode: string;
+  [key: string]: unknown;
+}
+
+export interface InitiateTransferInput {
+  amount: number;
+  currency: string;
+  reference: string;
+  recipient: RecipientInput;
+  reason?: string;
+  providerId?: string;
+  metadata?: Record<string, string>;
+}
+
+export interface Transfer {
+  id: string;
+  reference: string;
+  amount: number;
+  currency: string;
+  status: TransferStatus;
+  provider?: string | null;
+  providerTransferCode?: string | null;
+  pendingConfirmation?: boolean;
+  [key: string]: unknown;
+}
+
+export interface Bank {
+  name: string;
+  code: string;
+  [key: string]: unknown;
+}
+
+export interface Page<T> {
+  data: T[];
+  hasMore: boolean;
+  nextCursor: string | null;
+  total?: number;
+  [key: string]: unknown;
+}
+
+export interface PopfabConfig {
+  apiKey: string;
+  baseUrl?: string;
+  timeout?: number;
+  /** Maximum automatic retries for safe GET requests only. Defaults to 2. */
+  maxReadRetries?: number;
+  fetch?: typeof fetch;
+}
