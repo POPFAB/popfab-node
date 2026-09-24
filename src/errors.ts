@@ -37,6 +37,8 @@ export class RateLimitError extends PopfabError {
 export class ApiError extends PopfabError {}
 export class NetworkError extends PopfabError {}
 export class ConfigurationError extends PopfabError {}
+export class WebhookSignatureError extends PopfabError {}
+export class WebhookTimestampError extends PopfabError {}
 
 export function createApiError(status: number, body: unknown, requestId?: string, retryAfter?: number): PopfabError {
   const error = (body as { error?: { code?: string; message?: string; details?: ErrorDetails[] } })?.error;

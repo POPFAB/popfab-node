@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
+import { createHmac } from 'node:crypto';
 import test from 'node:test';
-import Popfab, { ConfigurationError, RateLimitError } from './index.js';
+import Popfab, { ConfigurationError, RateLimitError, WebhookSignatureError, WebhookTimestampError } from './index.js';
 
 test('maps a camelCase transfer request to the public API contract', async () => {
   let request: Request | undefined;
@@ -134,4 +135,33 @@ test('normalizes account verification, transfer states, lists, and bulk transfer
       { amount: 6000, reference: 'payout-3', recipient: { account_number: '0123456788', bank_code: '058', name: 'Tolu' } },
     ],
   });
+});
+
+test('verifies a timestamp-bound Popfab webhook using the exact raw payload', () => {
+  const secret = 'whsec_example';
+  const timestamp = 1_700_000_000_000;
+  const payload = JSON.stringify({
+    id: 'evt_1', type: 'payment.success', api_version: 'v1', created_at: '2023-11-14T22:13:20.000Z',
+    data: { payment: { id: 'pay_1', status: 'success' } },
+  });
+  const signature = `sha256=${createHmac('sha256', secret).update(`${timestamp}.${payload}`, 'utf8').digest('hex')}`;
+  const popfab = new Popfab({ apiKey: 'sk_test_example' });
+
+  const event = popfab.webhooks.constructEvent({ payload, signature, timestamp, webhookSecret: secret, now: timestamp + 1_000 });
+
+  assert.equal(event.id, 'evt_1');
+  assert.equal(event.type, 'payment.success');
+  assert.equal((event.data.payment as { status: string }).status, 'success');
+});
+
+test('rejects a malformed, altered, or stale webhook delivery', () => {
+  const secret = 'whsec_example';
+  const timestamp = 1_700_000_000_000;
+  const payload = JSON.stringify({ id: 'evt_1', type: 'payment.success', api_version: 'v1', created_at: 'now', data: {} });
+  const signature = `sha256=${createHmac('sha256', secret).update(`${timestamp}.${payload}`, 'utf8').digest('hex')}`;
+  const popfab = new Popfab({ apiKey: 'sk_test_example' });
+
+  assert.throws(() => popfab.webhooks.constructEvent({ payload: `${payload} `, signature, timestamp, webhookSecret: secret, now: timestamp }), WebhookSignatureError);
+  assert.throws(() => popfab.webhooks.constructEvent({ payload, signature: 'sha256=not-a-signature', timestamp, webhookSecret: secret, now: timestamp }), WebhookSignatureError);
+  assert.throws(() => popfab.webhooks.constructEvent({ payload, signature, timestamp, webhookSecret: secret, now: timestamp + 301_000 }), WebhookTimestampError);
 });

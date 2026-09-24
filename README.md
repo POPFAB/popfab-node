@@ -216,9 +216,32 @@ Available error classes include `AuthenticationError`, `ValidationError`, `Idemp
 
 ## Webhooks
 
-Webhook signature verification is planned for the next SDK release. Until then, receive and verify Popfab webhooks using the platform’s webhook documentation and preserve the raw request body for signature verification.
+Popfab signs each delivery with HMAC-SHA256 over the exact UTF-8 value:
 
-Do not treat a webhook as a replacement for idempotency: webhook handlers must remain safe to run more than once.
+```text
+<X-POPFAB-Timestamp>.<raw request body>
+```
+
+The SDK verifies `X-POPFAB-Signature`, validates `X-POPFAB-Timestamp` against a five-minute tolerance by default, and returns a typed event. Always provide the unmodified raw body—parsing and serializing JSON before verification changes the signed payload.
+
+```ts
+import express from 'express';
+
+app.post('/webhooks/popfab', express.raw({ type: 'application/json' }), (req, res) => {
+  const event = popfab.webhooks.constructEvent({
+    payload: req.body,
+    signature: req.header('X-POPFAB-Signature') ?? undefined,
+    timestamp: req.header('X-POPFAB-Timestamp') ?? undefined,
+    webhookSecret: process.env.POPFAB_WEBHOOK_SECRET!,
+  });
+
+  // Store/queue the event and make this operation idempotent by event.id.
+  console.log(event.id, event.type);
+  res.sendStatus(200);
+});
+```
+
+The dispatcher also sends `X-POPFAB-Event`, `X-POPFAB-Delivery`, and `X-POPFAB-Environment` headers. Do not treat a webhook as a replacement for idempotency: webhook handlers must remain safe to run more than once.
 
 ## API surface
 
@@ -226,6 +249,7 @@ Do not treat a webhook as a replacement for idempotency: webhook handlers must r
 | --- | --- |
 | `popfab.payments` | `initiate`, `get`, `list`, `sync`, `refund` |
 | `popfab.transfers` | `listBanks`, `verifyAccount`, `initiate`, `initiateBulk`, `get`, `list` |
+| `popfab.webhooks` | `constructEvent` |
 
 ## Development
 

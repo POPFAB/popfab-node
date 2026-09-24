@@ -171,3 +171,23 @@ export interface PopfabConfig {
   maxReadRetries?: number;
   fetch?: typeof fetch;
 }
+
+export interface WebhookEvent {
+  id: string;
+  type: string;
+  apiVersion: string;
+  createdAt: string;
+  data: Record<string, unknown>;
+}
+
+export interface ConstructWebhookEventInput {
+  /** Exact raw request bytes; never pass a re-serialized JSON object. */
+  payload: string | Uint8Array;
+  signature: string | undefined;
+  timestamp: string | number | undefined;
+  webhookSecret: string;
+  /** Maximum permitted timestamp skew in seconds. Defaults to 300. */
+  toleranceSeconds?: number;
+  /** Test-only clock override in Unix milliseconds. */
+  now?: number;
+}
