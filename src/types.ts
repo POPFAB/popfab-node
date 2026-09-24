@@ -22,11 +22,13 @@ export interface CustomerInput {
   region?: string;
 }
 
+export type PaymentMethod = 'card' | 'bank_transfer' | 'ussd' | 'mobile_money' | 'qr';
+
 export interface InitiatePaymentInput {
   amount: number;
   currency: string;
   reference: string;
-  paymentMethod: string;
+  paymentMethod: PaymentMethod;
   customer: CustomerInput;
   callbackUrl?: string;
   metadata?: Record<string, string>;
@@ -43,12 +45,27 @@ export interface Payment {
   providerReference?: string | null;
   checkoutUrl?: string | null;
   pendingConfirmation?: boolean;
+  paymentMethod?: PaymentMethod;
+  amountMinor?: number;
+  amountMinorUnit?: string;
+  failureReason?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
   [key: string]: unknown;
 }
 
 export interface RefundInput {
   amount?: number;
   reason?: string;
+}
+
+export interface SyncOptions extends RequestOptions {
+  force?: boolean;
+}
+
+export interface PaymentListOptions extends ListOptions {
+  status?: PaymentStatus;
+  provider?: string;
 }
 
 export interface RecipientInput {

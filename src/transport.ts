@@ -1,4 +1,4 @@
-import { ConfigurationError, NetworkError, createApiError } from './errors.js';
+import { ConfigurationError, NetworkError, PopfabError, createApiError } from './errors.js';
 import type { PopfabConfig, PopfabEnvironment, RequestOptions } from './types.js';
 
 export class Transport {
@@ -61,7 +61,7 @@ export class Transport {
         return responseBody as T;
       } catch (error) {
         lastError = error;
-        if (error instanceof Error && error.name.endsWith('Error') && 'statusCode' in error) throw error;
+        if (error instanceof PopfabError) throw error;
         if (attempt === retries) break;
       } finally {
         clearTimeout(timer);
