@@ -19,6 +19,14 @@
     "check": "tsc --noEmit -p tsconfig.json"
   },
   "keywords": ["popfab", "payments", "transfers", "fintech"],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/POPFAB/popfab-node.git"
+  },
+  "bugs": {
+    "url": "https://github.com/POPFAB/popfab-node/issues"
+  },
+  "homepage": "https://github.com/POPFAB/popfab-node#readme",
   "license": "UNLICENSED",
   "devDependencies": {
     "@types/node": "^22.10.7",

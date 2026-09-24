@@ -277,3 +277,14 @@ npm pack --dry-run
 ## Status
 
 This is an active pre-release SDK. The public API will follow semantic versioning once the first stable version is released.
+
+## Additional resources
+
+- [API reference](docs/API.md)
+- [Webhook examples](examples/webhooks)
+- [Contributing guide](CONTRIBUTING.md)
+- [Security policy](SECURITY.md)
+
+## License
+
+No open-source license has been selected yet. Do not copy, modify, or redistribute this package until Popfab publishes a license.
